@@ -10,61 +10,33 @@ const Login = () => {
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleLogin = (e) => {
-    e.preventDefault();
+    const handleLogin = () => {
+        login(role);
 
-    const stored = JSON.parse(
-      localStorage.getItem("sharebite_credentials")
-    );
+        if (role === "DONOR") navigate("/donor");
+        if (role === "RECIPIENT") navigate("/recipient");
+    };
 
-    if (!stored) {
-      alert("No account found. Please sign up.");
-      return;
-    }
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-bgsoft">
+            <div className="bg-white p-8 rounded-xl w-96">
+                <h1 className="text-2xl font-bold mb-4">Login</h1>
 
-    const identifierMatch =
-      identifier === stored.email ||
-      identifier === stored.phone;
+                <input className="w-full border p-2 mb-3" placeholder="Email" />
+                <input
+                    type="password"
+                    className="w-full border p-2 mb-3"
+                    placeholder="Password"
+                />
 
-    const passwordMatch =
-      password === stored.password;
-
-    if (!identifierMatch || !passwordMatch) {
-      alert("Invalid email/phone or password");
-      return;
-    }
-
-    login(stored.role);
-
-    if (stored.role === ROLES.DONOR) navigate("/donor");
-    if (stored.role === ROLES.RECIPIENT) navigate("/recipient");
-    if (stored.role === ROLES.VOLUNTEER) navigate("/volunteer");
-  };
-
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F4F1DE]">
-      <form
-        onSubmit={handleLogin}
-        className="bg-white p-10 rounded-2xl shadow-md w-full max-w-md space-y-6"
-      >
-        <h1 className="text-2xl font-bold text-center text-[#3D405B]">
-          Login to ShareBite
-        </h1>
-
-        <input
-          placeholder="Email or Phone Number"
-          value={identifier}
-          onChange={(e) => setIdentifier(e.target.value)}
-          className="w-full border px-4 py-2 rounded-lg"
-        />
-
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="w-full border px-4 py-2 rounded-lg"
-        />
+                <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="w-full border p-2 mb-4"
+                >
+                    <option value="DONOR">Donor</option>
+                    <option value="RECIPIENT">Recipient</option>
+                </select>
 
         <button
           type="submit"
@@ -73,19 +45,18 @@ const Login = () => {
           Login
         </button>
 
-        {/* 🔹 SIGNUP LINK (THIS WAS MISSING) */}
-        <p className="text-center text-sm text-gray-600">
-          Don’t have an account?{" "}
-          <span
-            onClick={() => navigate("/signup")}
-            className="text-[#E07A5F] font-bold cursor-pointer hover:underline"
-          >
-            Sign up
-          </span>
-        </p>
-      </form>
-    </div>
-  );
+                <p className="text-sm mt-4 text-center">
+                    Don’t have an account?{" "}
+                    <span
+                        className="text-sunset cursor-pointer"
+                        onClick={() => navigate("/signup")}
+                    >
+                        Sign Up
+                    </span>
+                </p>
+            </div>
+        </div>
+    );
 };
 
 export default Login;

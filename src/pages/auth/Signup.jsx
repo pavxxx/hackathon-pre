@@ -55,67 +55,46 @@ const Signup = () => {
     if (role === ROLES.VOLUNTEER) navigate("/volunteer");
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F4F1DE]">
-      <form
-        onSubmit={handleSignup}
-        className="bg-white p-10 rounded-2xl shadow-md w-full max-w-md space-y-4"
-      >
-        <h1 className="text-2xl font-bold text-center text-[#3D405B]">
-          Create Account
-        </h1>
+    return (
+        <div className="min-h-screen flex items-center justify-center bg-bgsoft">
+            <div className="bg-white p-8 rounded-xl w-96">
+                <h1 className="text-2xl font-bold mb-4">Create Account</h1>
 
-        <input
-          name="name"
-          placeholder="Name"
-          value={form.name}
-          onChange={handleChange}
-          className="w-full border px-4 py-2 rounded-lg"
-        />
+                <input className="w-full border p-2 mb-3" placeholder="Email" />
+                <input
+                    type="password"
+                    className="w-full border p-2 mb-3"
+                    placeholder="Password"
+                />
 
-        <input
-          name="email"
-          placeholder="Email"
-          value={form.email}
-          onChange={handleChange}
-          className="w-full border px-4 py-2 rounded-lg"
-        />
+                <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value)}
+                    className="w-full border p-2 mb-4"
+                >
+                    <option value="DONOR">Donor</option>
+                    <option value="RECIPIENT">Recipient</option>
+                </select>
 
-        <input
-          name="phone"
-          placeholder="Phone Number"
-          value={form.phone}
-          onChange={handleChange}
-          className="w-full border px-4 py-2 rounded-lg"
-        />
+                <button
+                    onClick={handleSignup}
+                    className="w-full bg-sunset text-white py-2 rounded-lg font-bold"
+                >
+                    Sign Up
+                </button>
 
-        <input
-          type="password"
-          name="password"
-          placeholder="Password"
-          value={form.password}
-          onChange={handleChange}
-          className="w-full border px-4 py-2 rounded-lg"
-        />
-
-        <select
-          name="role"
-          value={form.role}
-          onChange={handleChange}
-          className="w-full border px-4 py-2 rounded-lg bg-white"
-        >
-          <option value="">Select Role</option>
-          <option value={ROLES.DONOR}>Food Donor</option>
-          <option value={ROLES.RECIPIENT}>Food Recipient</option>
-          <option value={ROLES.VOLUNTEER}>Volunteer</option>
-        </select>
-
-        <button className="w-full bg-[#E07A5F] text-white py-3 rounded-lg font-bold">
-          Sign Up
-        </button>
-      </form>
-    </div>
-  );
+                <p className="text-sm mt-4 text-center">
+                    Already have an account?{" "}
+                    <span
+                        className="text-sunset cursor-pointer"
+                        onClick={() => navigate("/login")}
+                    >
+                        Login
+                    </span>
+                </p>
+            </div>
+        </div>
+    );
 };
 
 export default Signup;
