@@ -1,1 +1,21 @@
-@import "tailwindcss";
+body {
+    font-family: "Plus Jakarta Sans", sans-serif;
+}
+
+.badge-available {
+    background: #e6f3ec;
+    color: #3a7f63;
+    border: 1px solid #b9ddcc;
+}
+
+.badge-claimed {
+    background: #fde8e2;
+    color: #c35132;
+    border: 1px solid #f3b8a6;
+}
+
+.badge-picked {
+    background: #e5e7eb;
+    color: #4b5563;
+    border: 1px solid #d1d5db;
+}
