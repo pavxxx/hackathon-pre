@@ -1,65 +1,91 @@
-import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { ROLES } from "../../constants/roles";
 
 const Login = () => {
-    const navigate = useNavigate();
-    const [role, setRole] = useState("DONOR");
+  const navigate = useNavigate();
+  const { login } = useAuth();
 
-    const handleLogin = () => {
-        if (role === "DONOR") navigate("/donor");
-        if (role === "RECIPIENT") navigate("/recipient");
-        if (role === "VOLUNTEER") navigate("/volunteer");
-    };
+  const [identifier, setIdentifier] = useState("");
+  const [password, setPassword] = useState("");
 
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-[#F4F1DE]">
-            <div className="bg-white rounded-xl p-8 w-[380px] shadow-md">
-                <h1 className="text-2xl font-bold mb-6 text-[#3D405B]">
-                    Login
-                </h1>
+  const handleLogin = (e) => {
+    e.preventDefault();
 
-                <input
-                    type="email"
-                    placeholder="Email"
-                    className="w-full mb-4 px-4 py-2 border rounded-md"
-                />
-
-                <input
-                    type="password"
-                    placeholder="Password"
-                    className="w-full mb-4 px-4 py-2 border rounded-md"
-                />
-
-                <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="w-full mb-6 px-4 py-2 border rounded-md"
-                >
-                    <option value="DONOR">Donor</option>
-                    <option value="RECIPIENT">Recipient</option>
-                    <option value="VOLUNTEER">Volunteer</option>
-                </select>
-
-                <button
-                    onClick={handleLogin}
-                    className="w-full bg-[#E07A5F] text-white py-2 rounded-md font-semibold hover:opacity-90 transition"
-                >
-                    Login
-                </button>
-
-                {/* 👇 NEW USER LINK */}
-                <p className="text-sm text-center mt-4">
-                    New user?{" "}
-                    <span
-                        onClick={() => navigate("/signup")}
-                        className="text-[#E07A5F] font-semibold cursor-pointer"
-                    >
-                        Signup
-                    </span>
-                </p>
-            </div>
-        </div>
+    const stored = JSON.parse(
+      localStorage.getItem("sharebite_credentials")
     );
+
+    if (!stored) {
+      alert("No account found. Please sign up.");
+      return;
+    }
+
+    const identifierMatch =
+      identifier === stored.email ||
+      identifier === stored.phone;
+
+    const passwordMatch =
+      password === stored.password;
+
+    if (!identifierMatch || !passwordMatch) {
+      alert("Invalid email/phone or password");
+      return;
+    }
+
+    login(stored.role);
+
+    if (stored.role === ROLES.DONOR) navigate("/donor");
+    if (stored.role === ROLES.RECIPIENT) navigate("/recipient");
+    if (stored.role === ROLES.VOLUNTEER) navigate("/volunteer");
+  };
+
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#F4F1DE]">
+      <form
+        onSubmit={handleLogin}
+        className="bg-white p-10 rounded-2xl shadow-md w-full max-w-md space-y-6"
+      >
+        <h1 className="text-2xl font-bold text-center text-[#3D405B]">
+          Login to ShareBite
+        </h1>
+
+        <input
+          placeholder="Email or Phone Number"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
+          className="w-full border px-4 py-2 rounded-lg"
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full border px-4 py-2 rounded-lg"
+        />
+
+        <button
+          type="submit"
+          className="w-full bg-[#E07A5F] text-white py-3 rounded-lg font-bold hover:opacity-90 transition"
+        >
+          Login
+        </button>
+
+        {/* 🔹 SIGNUP LINK (THIS WAS MISSING) */}
+        <p className="text-center text-sm text-gray-600">
+          Don’t have an account?{" "}
+          <span
+            onClick={() => navigate("/signup")}
+            className="text-[#E07A5F] font-bold cursor-pointer hover:underline"
+          >
+            Sign up
+          </span>
+        </p>
+      </form>
+    </div>
+  );
 };
 
 export default Login;
