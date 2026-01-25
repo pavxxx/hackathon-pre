@@ -12,23 +12,29 @@ const Signup = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-bgsoft">
-            <div className="bg-white p-8 rounded-xl w-96">
-                <h1 className="text-2xl font-bold mb-4">Create Account</h1>
+            <div className="bg-white p-8 rounded-xl w-96 shadow-lg">
+                <h1 className="text-2xl font-bold mb-4 text-center">
+                    Create Account
+                </h1>
 
-                <input className="w-full border p-2 mb-3" placeholder="Email" />
+                <input
+                    className="w-full border p-2 mb-3 rounded"
+                    placeholder="Email"
+                />
                 <input
                     type="password"
-                    className="w-full border p-2 mb-3"
+                    className="w-full border p-2 mb-3 rounded"
                     placeholder="Password"
                 />
 
                 <select
                     value={role}
                     onChange={(e) => setRole(e.target.value)}
-                    className="w-full border p-2 mb-4"
+                    className="w-full border p-2 mb-4 rounded"
                 >
                     <option value="DONOR">Donor</option>
                     <option value="RECIPIENT">Recipient</option>
+                    <option value="VOLUNTEER">Volunteer (Delivery)</option>
                 </select>
 
                 <button
@@ -41,7 +47,7 @@ const Signup = () => {
                 <p className="text-sm mt-4 text-center">
                     Already have an account?{" "}
                     <span
-                        className="text-sunset cursor-pointer"
+                        className="text-sunset cursor-pointer font-semibold"
                         onClick={() => navigate("/login")}
                     >
                         Login
