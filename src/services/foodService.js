@@ -1,20 +1,23 @@
-export const getMyDonations = async () => {
-    return [
-        {
-            id: 1,
-            name: "Organic Vegetables Mix",
-            category: "Produce",
-            quantity: "15 kg",
-            expiresIn: "4h 20m",
-            status: "AVAILABLE",
-        },
-        {
-            id: 2,
-            name: "Fresh Bakery Basket",
-            category: "Bakery",
-            quantity: "5 Boxes",
-            expiresIn: "Claimed",
-            status: "CLAIMED",
-        },
-    ];
+import { doc, updateDoc } from "firebase/firestore";
+
+export const getAvailableDonations = async () => {
+  const q = query(
+    collection(db, "donations"),
+    where("status", "==", "Available")
+  );
+
+  const snapshot = await getDocs(q);
+  return snapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data(),
+  }));
+};
+
+export const claimDonation = async (donationId, recipientId) => {
+  const ref = doc(db, "donations", donationId);
+
+  await updateDoc(ref, {
+    status: "Claimed",
+    claimedBy: recipientId,
+  });
 };

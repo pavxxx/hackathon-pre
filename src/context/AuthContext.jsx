@@ -1,26 +1,32 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "../services/firebase";
 
 const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => {
-    const stored = localStorage.getItem("sharebite_user");
-    return stored ? JSON.parse(stored) : null;
-  });
+  const [user, setUser] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const login = (role) => {
-    const session = { role };
-    setUser(session);
-    localStorage.setItem("sharebite_user", JSON.stringify(session));
-  };
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        setUser({
+          uid: firebaseUser.uid,
+          email: firebaseUser.email,
+          role: localStorage.getItem("role"), // stored on login/signup
+        });
+      } else {
+        setUser(null);
+      }
+      setLoading(false);
+    });
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem("sharebite_user");
-  };
+    return () => unsub();
+  }, []);
 
   return (
-    <AuthContext.Provider value={{ user, login, logout }}>
+    <AuthContext.Provider value={{ user, loading }}>
       {children}
     </AuthContext.Provider>
   );

@@ -1,100 +1,77 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc, Timestamp } from "firebase/firestore";
+import { auth, db } from "../../services/firebase";
 import { ROLES } from "../../constants/roles";
+import { useNavigate, Link } from "react-router-dom";
 
 const Signup = () => {
-  const navigate = useNavigate();
-  const { login } = useAuth();
-
   const [form, setForm] = useState({
     name: "",
     email: "",
     phone: "",
     password: "",
-    role: "",
+    role: ROLES.DONOR,
   });
 
-  const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+  const navigate = useNavigate();
 
-  const handleSignup = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const { name, email, phone, password, role } = form;
-
-    if (!name || !email || !phone || !password || !role) {
-      alert("All fields are required");
+    if (form.password.length < 8 || !/\d/.test(form.password)) {
+      alert("Password must be at least 8 characters and include a number");
       return;
     }
 
-    if (password.length < 6) {
-      alert("Password must be at least 6 characters");
-      return;
+    try {
+      const res = await createUserWithEmailAndPassword(
+        auth,
+        form.email,
+        form.password
+      );
+
+      await setDoc(doc(db, "users", res.user.uid), {
+        name: form.name,
+        email: form.email,
+        phone: form.phone,
+        role: form.role,
+        createdAt: Timestamp.now(),
+      });
+
+      navigate("/login");
+    } catch (err) {
+      alert(err.message);
     }
-
-    const userRecord = {
-      name,
-      email,
-      phone,
-      password, // ✅ PLAIN TEXT (IMPORTANT)
-      role,
-    };
-
-    localStorage.setItem(
-      "sharebite_credentials",
-      JSON.stringify(userRecord)
-    );
-
-    console.log("Saved user:", userRecord);
-
-    login(role);
-
-    if (role === ROLES.DONOR) navigate("/donor");
-    if (role === ROLES.RECIPIENT) navigate("/recipient");
-    if (role === ROLES.VOLUNTEER) navigate("/volunteer");
   };
 
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-bgsoft">
-            <div className="bg-white p-8 rounded-xl w-96">
-                <h1 className="text-2xl font-bold mb-4">Create Account</h1>
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-bgsoft">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-8 rounded-xl w-[420px] space-y-4"
+      >
+        <h1 className="text-2xl font-bold">Create Account</h1>
 
-                <input className="w-full border p-2 mb-3" placeholder="Email" />
-                <input
-                    type="password"
-                    className="w-full border p-2 mb-3"
-                    placeholder="Password"
-                />
+        <input placeholder="Name" className="input" onChange={e => setForm({ ...form, name: e.target.value })} />
+        <input placeholder="Email" className="input" onChange={e => setForm({ ...form, email: e.target.value })} />
+        <input placeholder="Phone" className="input" onChange={e => setForm({ ...form, phone: e.target.value })} />
+        <input type="password" placeholder="Password" className="input" onChange={e => setForm({ ...form, password: e.target.value })} />
 
-                <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value)}
-                    className="w-full border p-2 mb-4"
-                >
-                    <option value="DONOR">Donor</option>
-                    <option value="RECIPIENT">Recipient</option>
-                </select>
+        <select className="input" onChange={e => setForm({ ...form, role: e.target.value })}>
+          <option value={ROLES.DONOR}>Food Donor</option>
+          <option value={ROLES.RECIPIENT}>Recipient</option>
+          <option value={ROLES.VOLUNTEER}>Volunteer</option>
+        </select>
 
-                <button
-                    onClick={handleSignup}
-                    className="w-full bg-sunset text-white py-2 rounded-lg font-bold"
-                >
-                    Sign Up
-                </button>
+        <button className="btn-primary w-full">Sign Up</button>
 
-                <p className="text-sm mt-4 text-center">
-                    Already have an account?{" "}
-                    <span
-                        className="text-sunset cursor-pointer"
-                        onClick={() => navigate("/login")}
-                    >
-                        Login
-                    </span>
-                </p>
-            </div>
-        </div>
-    );
+        <p className="text-center text-sm">
+          Already have an account? <Link to="/login" className="text-sunset font-bold">Login</Link>
+        </p>
+      </form>
+    </div>
+  );
 };
 
 export default Signup;

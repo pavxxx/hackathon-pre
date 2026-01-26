@@ -1,5 +1,5 @@
-export const ROLES = Object.freeze({
+export const ROLES = {
   DONOR: "DONOR",
   RECIPIENT: "RECIPIENT",
   VOLUNTEER: "VOLUNTEER",
-});
+};
