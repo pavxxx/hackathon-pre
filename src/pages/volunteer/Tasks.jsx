@@ -5,8 +5,21 @@ const VolunteerTasks = () => {
     const [tasks, setTasks] = useState([]);
 
     useEffect(() => {
-        getVolunteerTasks().then(setTasks);
-    }, []);
+  const q = query(
+    collection(db, "donations"),
+    where("status", "==", "Claimed")
+  );
+
+  onSnapshot(q, snap => {
+    setTasks(
+      snap.docs.map(d => ({
+        id: d.id,
+        ...d.data(),
+      }))
+    );
+  });
+}, []);
+
 
     const updateStatus = (taskId, newStatus) => {
         setTasks((prev) =>
