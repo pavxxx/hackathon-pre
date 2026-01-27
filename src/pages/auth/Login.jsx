@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { signInWithEmailAndPassword } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
-import { auth } from "../../services/firebase";
+import { auth, db } from "../../services/firebase";
 import { ROLES } from "../../constants/roles";
 
 const Login = () => {
-  const [emailOrPhone, setEmailOrPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
@@ -13,31 +14,36 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      // ⚠️ Firebase Auth supports EMAIL login (phone requires OTP setup)
+      // 1️⃣ Firebase Auth login
       const userCredential = await signInWithEmailAndPassword(
         auth,
-        emailOrPhone,
+        email.trim().toLowerCase(),
         password
       );
 
-      // 🔐 TEMP ROLE LOGIC (hackathon-safe)
-      // In real app → fetch role from Firestore
-      let role = localStorage.getItem("role");
+      const user = userCredential.user;
 
-      if (!role) {
-        // fallback role (VERY IMPORTANT)
-        role = ROLES.DONOR;
-        localStorage.setItem("role", role);
+      // 2️⃣ Fetch role from Firestore
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+
+      if (!userDoc.exists()) {
+        throw new Error("User profile not found");
       }
 
-      // ✅ REDIRECT BASED ON ROLE
-      if (role === ROLES.DONOR) navigate("/donor");
-      if (role === ROLES.RECIPIENT) navigate("/recipient");
-      if (role === ROLES.VOLUNTEER) navigate("/volunteer");
+      const role = userDoc.data().role;
 
-    } catch (error) {
-      alert("Invalid email/phone or password");
-      console.error(error);
+      // 3️⃣ Store role for ProtectedRoute + Sidebar
+      localStorage.setItem("role", role);
+
+      // 4️⃣ Redirect based on role
+      if (role === ROLES.DONOR) navigate("/donor");
+      else if (role === ROLES.RECIPIENT) navigate("/recipient");
+      else if (role === ROLES.VOLUNTEER) navigate("/volunteer");
+      else throw new Error("Invalid role");
+
+    } catch (err) {
+      console.error(err);
+      alert("Invalid email or password");
     }
   };
 
@@ -45,7 +51,7 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-[#F4F1DE]">
       <form
         onSubmit={handleLogin}
-        className="bg-white p-10 rounded-xl shadow-md w-[380px]"
+        className="bg-white p-8 rounded-xl shadow-md w-[380px]"
       >
         <h2 className="text-2xl font-bold mb-6 text-[#3D405B]">
           Login to ShareBite
@@ -55,8 +61,8 @@ const Login = () => {
           type="email"
           placeholder="Email"
           className="w-full mb-4 p-3 border rounded-lg"
-          value={emailOrPhone}
-          onChange={(e) => setEmailOrPhone(e.target.value)}
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
           required
         />
 

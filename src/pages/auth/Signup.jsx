@@ -6,6 +6,8 @@ import { ROLES } from "../../constants/roles";
 import { useNavigate, Link } from "react-router-dom";
 
 const Signup = () => {
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -13,8 +15,6 @@ const Signup = () => {
     password: "",
     role: ROLES.DONOR,
   });
-
-  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -46,28 +46,70 @@ const Signup = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-bgsoft">
+    <div className="min-h-screen flex items-center justify-center bg-[#F4F1DE]">
       <form
         onSubmit={handleSubmit}
-        className="bg-white p-8 rounded-xl w-[420px] space-y-4"
+        className="bg-white rounded-xl p-8 w-[380px] shadow-md"
       >
-        <h1 className="text-2xl font-bold">Create Account</h1>
+        <h1 className="text-2xl font-bold mb-6 text-[#3D405B]">
+          Create Account
+        </h1>
 
-        <input placeholder="Name" className="input" onChange={e => setForm({ ...form, name: e.target.value })} />
-        <input placeholder="Email" className="input" onChange={e => setForm({ ...form, email: e.target.value })} />
-        <input placeholder="Phone" className="input" onChange={e => setForm({ ...form, phone: e.target.value })} />
-        <input type="password" placeholder="Password" className="input" onChange={e => setForm({ ...form, password: e.target.value })} />
+        <input
+          type="text"
+          placeholder="Full Name"
+          className="w-full mb-4 px-4 py-2 border rounded-md"
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          required
+        />
 
-        <select className="input" onChange={e => setForm({ ...form, role: e.target.value })}>
+        <input
+          type="email"
+          placeholder="Email"
+          className="w-full mb-4 px-4 py-2 border rounded-md"
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          required
+        />
+
+        <input
+          type="tel"
+          placeholder="Phone"
+          className="w-full mb-4 px-4 py-2 border rounded-md"
+          onChange={(e) => setForm({ ...form, phone: e.target.value })}
+        />
+
+        <input
+          type="password"
+          placeholder="Password"
+          className="w-full mb-4 px-4 py-2 border rounded-md"
+          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          required
+        />
+
+        <select
+          className="w-full mb-6 px-4 py-2 border rounded-md"
+          onChange={(e) => setForm({ ...form, role: e.target.value })}
+        >
           <option value={ROLES.DONOR}>Food Donor</option>
           <option value={ROLES.RECIPIENT}>Recipient</option>
           <option value={ROLES.VOLUNTEER}>Volunteer</option>
         </select>
 
-        <button className="btn-primary w-full">Sign Up</button>
+        <button
+          type="submit"
+          className="w-full bg-[#E07A5F] text-white py-2 rounded-md font-semibold hover:opacity-90 transition"
+        >
+          Sign Up
+        </button>
 
-        <p className="text-center text-sm">
-          Already have an account? <Link to="/login" className="text-sunset font-bold">Login</Link>
+        <p className="text-sm text-center mt-4">
+          Already have an account?{" "}
+          <Link
+            to="/login"
+            className="text-[#E07A5F] font-semibold"
+          >
+            Login
+          </Link>
         </p>
       </form>
     </div>
