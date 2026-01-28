@@ -6,6 +6,9 @@ import {
   onSnapshot,
   updateDoc,
   doc,
+  addDoc,
+  serverTimestamp,
+  getDocs,
 } from "firebase/firestore";
 import { db } from "../../services/firebase";
 import { useAuth } from "../../context/AuthContext";
@@ -18,40 +21,54 @@ const BrowseFood = () => {
   useEffect(() => {
     const q = query(
       collection(db, "donations"),
-      where("status", "==", "Available")
+      where("status", "==", "AVAILABLE")
     );
 
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      const data = snapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-
-      setFoods(data);
+    const unsub = onSnapshot(q, (snap) => {
+      setFoods(
+        snap.docs.map((d) => ({
+          id: d.id,
+          ...d.data(),
+        }))
+      );
       setLoading(false);
     });
 
-    return () => unsubscribe();
+    return () => unsub();
   }, []);
 
-  const handleClaim = async (donationId) => {
-    try {
-      await updateDoc(doc(db, "donations", donationId), {
-        status: "Claimed",
-        claimedBy: user.uid,
-      });
-
-      // No manual state update needed — onSnapshot handles it
-      alert("Food claimed successfully!");
-    } catch (err) {
-      console.error(err);
-      alert("Failed to claim food");
-    }
-  };
-
-  if (loading) {
-    return <p className="p-6">Loading available food...</p>;
+const handleClaim = async (food) => {
+  if (food.donorId === user.uid) {
+    alert("You cannot claim your own donation");
+    return;
   }
+
+  try {
+    // ✅ Recipient ONLY claims food
+    await updateDoc(doc(db, "donations", food.id), {
+      status: "CLAIMED",
+      claimedBy: user.uid,
+      claimedAt: serverTimestamp(),
+    });
+
+    // ✅ Create request
+    await addDoc(collection(db, "requests"), {
+      donationId: food.id,
+      recipientId: user.uid,
+      donorId: food.donorId,
+      status: "CLAIMED",
+      createdAt: serverTimestamp(),
+    });
+
+    alert("Food claimed successfully!");
+  } catch (err) {
+    console.error(err);
+    alert("Failed to claim food");
+  }
+};
+
+
+  if (loading) return <p className="p-6">Loading food...</p>;
 
   return (
     <div className="space-y-6">
@@ -61,7 +78,7 @@ const BrowseFood = () => {
 
       {foods.length === 0 && (
         <p className="text-gray-500">
-          No food available right now.
+          No food available at the moment.
         </p>
       )}
 
@@ -75,14 +92,14 @@ const BrowseFood = () => {
             <p className="text-sm text-gray-500">
               Quantity: {food.quantity} {food.unit}
             </p>
-            <p className="text-xs text-gray-400">
-              Pickup: {food.pickupAddress}
+            <p className="text-sm text-gray-500">
+              Pickup: {food.pickupLocation}
             </p>
           </div>
 
           <button
-            onClick={() => handleClaim(food.id)}
-            className="bg-[#E07A5F] text-white px-4 py-2 rounded-lg font-bold"
+            onClick={() => handleClaim(food)}
+            className="bg-[#E07A5F] text-white px-5 py-2 rounded-lg font-bold"
           >
             Claim
           </button>

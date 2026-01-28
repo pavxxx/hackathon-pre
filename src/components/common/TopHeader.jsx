@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../../services/firebase";
+import { signOut } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
+
+import { db, auth } from "../../services/firebase";
 import { useAuth } from "../../context/AuthContext";
 
 const TopHeader = () => {
   const { user } = useAuth();
   const [profile, setProfile] = useState(null);
+  const navigate = useNavigate(); // ✅ ONLY hook usage
 
   useEffect(() => {
     if (!user?.uid) return;
@@ -20,6 +24,11 @@ const TopHeader = () => {
     fetchProfile();
   }, [user]);
 
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigate("/login", { replace: true });
+  };
+
   return (
     <header className="flex items-center justify-between px-8 py-4 bg-white/80 backdrop-blur border-b">
       <div>
@@ -30,25 +39,25 @@ const TopHeader = () => {
             ? "Recipient Dashboard"
             : "Volunteer Dashboard"}
         </h2>
-
-        <p className="text-xs text-[#81B29A] mt-1">
-          Welcome back 👋
-        </p>
+        <p className="text-xs text-[#81B29A] mt-1">Welcome back 👋</p>
       </div>
 
       <div className="flex items-center gap-4">
         <div className="text-right">
-          <p className="text-sm font-bold">
-            {profile?.name || "User"}
-          </p>
-          <p className="text-xs text-[#81B29A]">
-            {profile?.role}
-          </p>
+          <p className="text-sm font-bold">{profile?.name || "User"}</p>
+          <p className="text-xs text-[#81B29A]">{profile?.role}</p>
         </div>
 
         <div className="w-10 h-10 rounded-full bg-[#81B29A] flex items-center justify-center text-white font-bold">
           {profile?.name?.charAt(0) || "U"}
         </div>
+
+        <button
+          onClick={handleLogout}
+          className="text-sm text-red-600 font-semibold hover:underline"
+        >
+          Logout
+        </button>
       </div>
     </header>
   );

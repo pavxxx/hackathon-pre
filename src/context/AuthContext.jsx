@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { auth } from "../services/firebase";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "../services/firebase";
 
 const AuthContext = createContext();
 
@@ -9,16 +10,26 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
-      if (firebaseUser) {
-        setUser({
-          uid: firebaseUser.uid,
-          email: firebaseUser.email,
-          role: localStorage.getItem("role"), // stored on login/signup
-        });
-      } else {
+    const unsub = onAuthStateChanged(auth, async (firebaseUser) => {
+      if (!firebaseUser) {
         setUser(null);
+        setLoading(false);
+        return;
       }
+
+      const snap = await getDoc(doc(db, "users", firebaseUser.uid));
+      if (!snap.exists()) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      setUser({
+        uid: firebaseUser.uid,
+        email: firebaseUser.email,
+        ...snap.data(), // name, role
+      });
+
       setLoading(false);
     });
 
@@ -27,7 +38,7 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider value={{ user, loading }}>
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

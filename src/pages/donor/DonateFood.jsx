@@ -1,23 +1,21 @@
 import { useState } from "react";
-import { addDoc, collection, Timestamp } from "firebase/firestore";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 import { db } from "../../services/firebase";
 import { useAuth } from "../../context/AuthContext";
 
 const DonateFood = () => {
   const { user } = useAuth();
+  const navigate = useNavigate();
 
   const [form, setForm] = useState({
     foodName: "",
-    category: "",
     quantity: "",
     unit: "kg",
-    preparedAt: "",
-    expiresAt: "",
-    pickupAddress: "",
-    storage: "",
-    contactPhone: "",
-    hygieneNote: "",
-    additionalNotes: "",
+    foodType: "VEG",
+    expiryAt: "",
+    pickupLocation: "",
+    pickupTime: "",
   });
 
   const handleChange = (e) => {
@@ -27,100 +25,111 @@ const DonateFood = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!user) {
-      alert("User not authenticated");
-      return;
+    // ✅ Validation
+    for (const key in form) {
+      if (!form[key]) {
+        alert("Please fill all fields");
+        return;
+      }
     }
 
     try {
       await addDoc(collection(db, "donations"), {
         foodName: form.foodName,
-        category: form.category,
-        quantity: form.quantity,
+        quantity: Number(form.quantity),
         unit: form.unit,
-
-        preparedAt: Timestamp.fromDate(new Date(form.preparedAt)),
-        expiresAt: Timestamp.fromDate(new Date(form.expiresAt)),
-
-        pickupAddress: form.pickupAddress,
-        storage: form.storage,
-        contactPhone: form.contactPhone,
-        hygieneNote: form.hygieneNote,
-        additionalNotes: form.additionalNotes,
+        foodType: form.foodType,
+        expiryAt: new Date(form.expiryAt),
+        pickupLocation: form.pickupLocation,
+        pickupTime: form.pickupTime,
 
         donorId: user.uid,
-        status: "Available",
-        createdAt: Timestamp.now(),
+        donorName: user.name,
+
+        status: "AVAILABLE",
+        createdAt: serverTimestamp(),
       });
 
-      alert("Donation posted successfully!");
-
-      setForm({
-        foodName: "",
-        category: "",
-        quantity: "",
-        unit: "kg",
-        preparedAt: "",
-        expiresAt: "",
-        pickupAddress: "",
-        storage: "",
-        contactPhone: "",
-        hygieneNote: "",
-        additionalNotes: "",
-      });
-    } catch (error) {
-      console.error(error);
+      alert("Donation posted successfully");
+      navigate("/donor/donations");
+    } catch (err) {
+      console.error(err);
       alert("Failed to post donation");
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto bg-white p-8 rounded-xl border">
-      <h1 className="text-2xl font-bold text-[#3D405B] mb-6">
+    <div className="max-w-2xl bg-white p-8 rounded-xl border">
+      <h1 className="text-2xl font-bold mb-6 text-[#3D405B]">
         Post New Donation
       </h1>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <input name="foodName" placeholder="Food Name" className="w-full p-3 border rounded-lg" required value={form.foodName} onChange={handleChange} />
+      <form className="space-y-4" onSubmit={handleSubmit}>
+        <input
+          name="foodName"
+          placeholder="Food Name"
+          className="w-full p-3 border rounded"
+          value={form.foodName}
+          onChange={handleChange}
+        />
 
-        <select name="category" className="w-full p-3 border rounded-lg" required value={form.category} onChange={handleChange}>
-          <option value="">Category</option>
-          <option>Vegetarian</option>
-          <option>Non-Vegetarian</option>
-          <option>Bakery</option>
-          <option>Cooked Meals</option>
-        </select>
+        <div className="flex gap-4">
+          <input
+            name="quantity"
+            type="number"
+            placeholder="Quantity"
+            className="w-full p-3 border rounded"
+            value={form.quantity}
+            onChange={handleChange}
+          />
 
-        <div className="grid grid-cols-2 gap-4">
-          <input name="quantity" type="number" placeholder="Quantity" className="p-3 border rounded-lg" required value={form.quantity} onChange={handleChange} />
-          <select name="unit" className="p-3 border rounded-lg" value={form.unit} onChange={handleChange}>
-            <option>kg</option>
-            <option>plates</option>
-            <option>boxes</option>
+          <select
+            name="unit"
+            className="w-full p-3 border rounded"
+            value={form.unit}
+            onChange={handleChange}
+          >
+            <option value="kg">Kg</option>
+            <option value="plates">Plates</option>
+            <option value="boxes">Boxes</option>
           </select>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
-          <input name="preparedAt" type="datetime-local" className="p-3 border rounded-lg" required value={form.preparedAt} onChange={handleChange} />
-          <input name="expiresAt" type="datetime-local" className="p-3 border rounded-lg" required value={form.expiresAt} onChange={handleChange} />
-        </div>
-
-        <textarea name="pickupAddress" placeholder="Pickup Address" className="w-full p-3 border rounded-lg" required value={form.pickupAddress} onChange={handleChange} />
-
-        <select name="storage" className="w-full p-3 border rounded-lg" required value={form.storage} onChange={handleChange}>
-          <option value="">Storage Condition</option>
-          <option>Room Temperature</option>
-          <option>Refrigerated</option>
-          <option>Frozen</option>
+        <select
+          name="foodType"
+          className="w-full p-3 border rounded"
+          value={form.foodType}
+          onChange={handleChange}
+        >
+          <option value="VEG">Vegetarian</option>
+          <option value="NON_VEG">Non-Vegetarian</option>
         </select>
 
-        <input name="contactPhone" placeholder="Contact Phone" className="w-full p-3 border rounded-lg" required value={form.contactPhone} onChange={handleChange} />
+        <input
+          type="datetime-local"
+          name="expiryAt"
+          className="w-full p-3 border rounded"
+          value={form.expiryAt}
+          onChange={handleChange}
+        />
 
-        <textarea name="hygieneNote" placeholder="Hygiene Notes (optional)" className="w-full p-3 border rounded-lg" value={form.hygieneNote} onChange={handleChange} />
+        <input
+          name="pickupLocation"
+          placeholder="Pickup Location"
+          className="w-full p-3 border rounded"
+          value={form.pickupLocation}
+          onChange={handleChange}
+        />
 
-        <textarea name="additionalNotes" placeholder="Additional Notes" className="w-full p-3 border rounded-lg" value={form.additionalNotes} onChange={handleChange} />
+        <input
+          name="pickupTime"
+          placeholder="Pickup Time (e.g. 6PM – 8PM)"
+          className="w-full p-3 border rounded"
+          value={form.pickupTime}
+          onChange={handleChange}
+        />
 
-        <button type="submit" className="bg-[#E07A5F] text-white px-8 py-3 rounded-lg font-bold">
+        <button className="w-full bg-[#E07A5F] text-white py-3 rounded font-bold">
           Post Donation
         </button>
       </form>

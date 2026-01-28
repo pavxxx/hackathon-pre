@@ -1,23 +1,32 @@
-import { doc, updateDoc } from "firebase/firestore";
-
-export const getAvailableDonations = async () => {
-  const q = query(
-    collection(db, "donations"),
-    where("status", "==", "Available")
-  );
-
-  const snapshot = await getDocs(q);
-  return snapshot.docs.map(doc => ({
-    id: doc.id,
-    ...doc.data(),
-  }));
-};
+import {
+  doc,
+  updateDoc,
+  collection,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
+import { db } from "./firebase";
 
 export const claimDonation = async (donationId, recipientId) => {
-  const ref = doc(db, "donations", donationId);
+  // 🔍 Find any volunteer
+  const volunteerQuery = query(
+    collection(db, "users"),
+    where("role", "==", "VOLUNTEER")
+  );
 
-  await updateDoc(ref, {
+  const snap = await getDocs(volunteerQuery);
+
+  if (snap.empty) {
+    throw new Error("No volunteer found");
+  }
+
+  const volunteerId = snap.docs[0].id;
+
+  // ✅ Update donation
+  await updateDoc(doc(db, "donations", donationId), {
     status: "Claimed",
     claimedBy: recipientId,
+    volunteerId: volunteerId,
   });
 };

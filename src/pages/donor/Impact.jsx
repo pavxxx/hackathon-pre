@@ -8,6 +8,22 @@ import {
 import { db } from "../../services/firebase";
 import { useAuth } from "../../context/AuthContext";
 
+/* =========================
+   REALISTIC CONSTANTS
+========================= */
+const KG_PER_PLATE = 0.35;
+const KG_PER_BOX = 3;
+const KG_PER_MEAL = 0.45;
+const CO2_PER_KG = 1.9;
+
+/* SAFETY CAPS (ANTI-INFLATION) */
+const MAX_KG = 100;
+const MAX_PLATES = 200;
+const MAX_BOXES = 50;
+
+const clamp = (value, max) =>
+  Math.min(Number(value) || 0, max);
+
 const Impact = () => {
   const { user } = useAuth();
 
@@ -24,9 +40,9 @@ const Impact = () => {
     if (!user) return;
 
     const loadImpact = async () => {
-      /* ==========================
-         DONOR-SPECIFIC STATS
-      ========================== */
+      /* =========================
+         DONOR-SPECIFIC DATA
+      ========================= */
       const donorQuery = query(
         collection(db, "donations"),
         where("donorId", "==", user.uid)
@@ -34,61 +50,81 @@ const Impact = () => {
 
       const donorSnap = await getDocs(donorQuery);
 
-      let totalMeals = donorSnap.size;
       let foodSavedKg = 0;
 
       donorSnap.forEach((doc) => {
         const d = doc.data();
+
         if (d.unit === "kg") {
-          foodSavedKg += Number(d.quantity);
+          foodSavedKg += clamp(d.quantity, MAX_KG);
+        }
+
+        if (d.unit === "plates") {
+          foodSavedKg +=
+            clamp(d.quantity, MAX_PLATES) * KG_PER_PLATE;
+        }
+
+        if (d.unit === "boxes") {
+          foodSavedKg +=
+            clamp(d.quantity, MAX_BOXES) * KG_PER_BOX;
         }
       });
 
-      const co2PreventedKg = foodSavedKg * 1.9; // approx
+      const totalMeals = Math.round(
+        foodSavedKg / KG_PER_MEAL
+      );
+
+      const co2PreventedKg = Math.round(
+        foodSavedKg * CO2_PER_KG
+      );
 
       setStats({
         totalMeals,
-        foodSavedKg,
+        foodSavedKg: Math.round(foodSavedKg),
         co2PreventedKg,
       });
 
-      /* ==========================
-         BADGES (CALCULATED)
-      ========================== */
+      /* =========================
+         BADGES (LOGICAL)
+      ========================= */
       const earnedBadges = [];
 
-      if (totalMeals >= 10) {
+      if (totalMeals >= 20) {
         earnedBadges.push({
           name: "Community Hero",
-          desc: "10+ donations made",
+          desc: "20+ meals donated",
         });
       }
 
       if (foodSavedKg >= 50) {
         earnedBadges.push({
           name: "Green Warrior",
-          desc: "50kg+ food waste reduced",
+          desc: "50kg food waste reduced",
         });
       }
 
-      if (totalMeals >= 20) {
+      if (totalMeals >= 50) {
         earnedBadges.push({
           name: "Gold Donor",
-          desc: "20+ donations contributed",
+          desc: "50+ meals contributed",
         });
       }
 
       setBadges(earnedBadges);
 
-      /* ==========================
+      /* =========================
          LEADERBOARD
-      ========================== */
-      const allSnap = await getDocs(collection(db, "donations"));
+      ========================= */
+      const allSnap = await getDocs(
+        collection(db, "donations")
+      );
+
       const donorMap = {};
 
       allSnap.forEach((doc) => {
         const d = doc.data();
-        donorMap[d.donorId] = (donorMap[d.donorId] || 0) + 1;
+        donorMap[d.donorId] =
+          (donorMap[d.donorId] || 0) + 1;
       });
 
       const leaderboardData = Object.entries(donorMap)
@@ -107,29 +143,29 @@ const Impact = () => {
 
   return (
     <div className="space-y-10">
-      {/* PAGE TITLE */}
+      {/* TITLE */}
       <div>
         <h1 className="text-2xl font-bold text-[#3D405B]">
           Your Impact
         </h1>
         <p className="text-sm text-[#81B29A] mt-1">
-          See how your donations are making a difference
+          Calculated from your real donations
         </p>
       </div>
 
-      {/* IMPACT STATS */}
+      {/* STATS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Stat
           label="Total Meals Donated"
           value={stats.totalMeals}
         />
         <Stat
-          label="CO₂ Emissions Prevented"
-          value={`${stats.co2PreventedKg.toFixed(1)} kg`}
-        />
-        <Stat
           label="Food Waste Reduced"
           value={`${stats.foodSavedKg} kg`}
+        />
+        <Stat
+          label="CO₂ Emissions Prevented"
+          value={`${stats.co2PreventedKg} kg`}
         />
       </div>
 
@@ -141,7 +177,7 @@ const Impact = () => {
 
         {badges.length === 0 && (
           <p className="text-sm text-gray-500">
-            No badges earned yet. Keep donating!
+            No badges yet — keep donating!
           </p>
         )}
 
@@ -172,7 +208,7 @@ const Impact = () => {
           <thead>
             <tr className="text-sm text-gray-500 border-b">
               <th className="pb-2">Rank</th>
-              <th className="pb-2">Donor ID</th>
+              <th className="pb-2">Donor</th>
               <th className="pb-2">Donations</th>
             </tr>
           </thead>
@@ -194,12 +230,17 @@ const Impact = () => {
   );
 };
 
+/* =========================
+   STAT CARD
+========================= */
 const Stat = ({ label, value }) => (
   <div className="bg-white p-6 rounded-xl border">
     <p className="text-sm font-bold text-[#81B29A]">
       {label}
     </p>
-    <p className="text-3xl font-bold mt-2">{value}</p>
+    <p className="text-3xl font-bold mt-2">
+      {value}
+    </p>
   </div>
 );
 
