@@ -15,10 +15,14 @@ const Navbar = () => {
             <h2 className="font-bold text-lg">Dashboard</h2>
             <button
                 onClick={handleLogout}
-                className="text-sunset font-semibold"
+                className="px-4 py-1.5 rounded-full
+               bg-red-50 text-red-500
+               hover:bg-red-100
+               transition text-sm font-semibold"
             >
                 Logout
             </button>
+
         </header>
     );
 };

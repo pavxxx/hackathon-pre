@@ -7,6 +7,8 @@ import { useAuth } from "../../context/AuthContext";
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -19,7 +21,6 @@ const Login = () => {
     );
   };
 
-  // ✅ Redirect ONLY after role is loaded
   useEffect(() => {
     if (!user) return;
 
@@ -30,8 +31,11 @@ const Login = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#F4F1DE]">
-      <form className="bg-white p-8 rounded-xl w-[380px]" onSubmit={handleLogin}>
-        <h2 className="text-2xl font-bold mb-6">Login</h2>
+      <form
+        className="bg-white p-8 rounded-xl w-[380px]"
+        onSubmit={handleLogin}
+      >
+        <h2 className="text-2xl font-bold mb-6">Login to Share-Bite</h2>
 
         <input
           className="w-full mb-4 p-3 border rounded"
@@ -41,14 +45,25 @@ const Login = () => {
           required
         />
 
-        <input
-          type="password"
-          className="w-full mb-6 p-3 border rounded"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+        <div className="relative mb-6">
+          <input
+            type={showPassword ? "text" : "password"}
+            className="w-full p-3 border rounded pr-12"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-3 top-1/2 -translate-y-1/2
+                       text-sm font-semibold text-[#E07A5F]"
+          >
+            {showPassword ? "Hide" : "Show"}
+          </button>
+        </div>
 
         <button className="w-full bg-[#E07A5F] text-white py-3 rounded font-bold">
           Login

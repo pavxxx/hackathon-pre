@@ -15,6 +15,7 @@ import BrowseFood from "./pages/recipient/BrowseFood";
 import MyRequests from "./pages/recipient/MyRequests";
 
 import Tasks from "./pages/volunteer/Tasks";
+import Profile from "./pages/volunteer/Profile";
 
 import { ROLES } from "./constants/roles";
 
@@ -64,6 +65,7 @@ const App = () => {
           }
         >
           <Route index element={<Tasks />} />
+          <Route path="/volunteer/profile" element={<Profile />} />
         </Route>
 
         {/* FALLBACK */}

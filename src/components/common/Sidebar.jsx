@@ -8,17 +8,17 @@ const Sidebar = () => {
   const tabs =
     user.role === "DONOR"
       ? [
-          { name: "Overview", path: "/donor" },
-          { name: "Post Donation", path: "/donor/donate" },
-          { name: "My Donations", path: "/donor/donations" },
-          { name: "Impact", path: "/donor/impact" },
-        ]
+        { name: "Overview", path: "/donor" },
+        { name: "Post Donation", path: "/donor/donate" },
+        { name: "My Donations", path: "/donor/donations" },
+        { name: "Impact", path: "/donor/impact" },
+      ]
       : user.role === "RECIPIENT"
-      ? [
+        ? [
           { name: "Browse Food", path: "/recipient" },
           { name: "My Requests", path: "/recipient/requests" },
         ]
-      : [{ name: "Tasks", path: "/volunteer" }];
+        : [{ name: "Tasks", path: "/volunteer" }, { name: "Profile", path: "/volunteer/profile" }];
 
   return (
     <aside className="w-64 bg-white border-r p-6">
@@ -34,10 +34,9 @@ const Sidebar = () => {
             to={t.path}
             end
             className={({ isActive }) =>
-              `block px-4 py-2 rounded ${
-                isActive
-                  ? "bg-[#E07A5F]/10 text-[#E07A5F]"
-                  : "text-gray-600 hover:bg-gray-100"
+              `block px-4 py-2 rounded ${isActive
+                ? "bg-[#E07A5F]/10 text-[#E07A5F]"
+                : "text-gray-600 hover:bg-gray-100"
               }`
             }
           >

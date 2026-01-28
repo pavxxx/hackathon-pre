@@ -36,8 +36,8 @@ const TopHeader = () => {
           {profile?.role === "DONOR"
             ? "Donor Dashboard"
             : profile?.role === "RECIPIENT"
-            ? "Recipient Dashboard"
-            : "Volunteer Dashboard"}
+              ? "Recipient Dashboard"
+              : "Volunteer Dashboard"}
         </h2>
         <p className="text-xs text-[#81B29A] mt-1">Welcome back 👋</p>
       </div>
@@ -54,10 +54,14 @@ const TopHeader = () => {
 
         <button
           onClick={handleLogout}
-          className="text-sm text-red-600 font-semibold hover:underline"
+          className="px-4 py-1.5 rounded-full
+             bg-red-50 text-red-500
+             hover:bg-red-100
+             transition text-sm font-semibold"
         >
           Logout
         </button>
+
       </div>
     </header>
   );
