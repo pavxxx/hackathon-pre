@@ -1,12 +1,31 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>share-bite</title>
+    <title>ShareBite</title>
+
+    <!-- ✅ Tailwind CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- ✅ Tailwind theme config (CDN MODE ONLY) -->
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              bgsoft: "#F4F1DE",
+              sunset: "#E07A5F",
+              sage: "#81B29A",
+              darksage: "#3D405B",
+            },
+          },
+        },
+      };
+    </script>
   </head>
-  <body>
+
+  <body class="bg-bgsoft text-darksage">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

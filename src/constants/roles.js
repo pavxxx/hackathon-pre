@@ -1,0 +1,5 @@
+export const ROLES = {
+  DONOR: "DONOR",
+  RECIPIENT: "RECIPIENT",
+  VOLUNTEER: "VOLUNTEER",
+};
